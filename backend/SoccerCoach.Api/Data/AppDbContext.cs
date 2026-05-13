@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<PlayerPosition> PlayerPositions => Set<PlayerPosition>();
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<MatchEvent> MatchEvents => Set<MatchEvent>();
+    public DbSet<Substitution> Substitutions => Set<Substitution>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
