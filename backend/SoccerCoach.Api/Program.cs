@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SoccerCoach.Api.Data;
 using SoccerCoach.Api.Models;
 using SoccerCoach.Api.Services;
+using SoccerCoach.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,5 +63,41 @@ app.MapPost("/matches/{matchId:int}/generatePlan", async (int matchId, PlannerSe
     var plan = await planner.GeneratePlanAsync(matchId);
     return Results.Ok(plan);
 });
+
+// Confirm / reject substitution
+app.MapPost("/substitutions/{id:int}/decision", async (int id, DecisionRequest req, AppDbContext db) =>
+{
+    var sub = await db.Substitutions.FindAsync(id);
+    if (sub is null) return Results.NotFound();
+
+    if (req.Decision == "confirm")
+        sub.IsConfirmed = true;
+    else if (req.Decision == "reject")
+        sub.IsRejected = true;
+
+    sub.DecisionMadeAt = DateTime.UtcNow;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(sub);
+});
+
+// Check if replanning is needed
+app.MapGet("/matches/{matchId:int}/needsReplan", async (int matchId, AppDbContext db) =>
+{
+    var rejectedExists = await db.Substitutions
+        .AnyAsync(s => s.MatchId == matchId && s.IsRejected);
+
+    return Results.Ok(new { needsReplan = rejectedExists });
+});
+
+// Trigger replanning
+app.MapPost("/matches/{matchId:int}/replan", async (int matchId, PlannerService planner) =>
+{
+    var plan = await planner.GeneratePlanAsync(matchId);
+    return Results.Ok(plan);
+});
+
+
 
 app.Run();
