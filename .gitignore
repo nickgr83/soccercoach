@@ -1,0 +1,17 @@
+
+# Android/Gradle
+.gradle/
+**/build/
+local.properties
+*.iml
+.idea/
+.DS_Store
+
+# .NET
+**/bin/
+**/obj/
+
+# Secrets
+**/*.keystore
+**/*.jks
+**/appsettings.Development.json
